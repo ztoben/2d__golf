@@ -318,10 +318,11 @@ function drawBoard(p: p5) {
     x: levelState.flagPosition.x + TILE_SIZE / 2,
     y: levelState.flagPosition.y + TILE_SIZE / 2,
   };
-  p.stroke('red');
+  p.stroke('white');
   p.fill('black');
   p.circle(centerOfCup.x, centerOfCup.y, TILE_SIZE / 2);
 
+  p.stroke('red');
   p.fill('red');
   p.line(
     centerOfCup.x,
