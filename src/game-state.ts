@@ -2,7 +2,8 @@ import {createStore} from "solid-js/store";
 
 export interface GameState {
   location: string;
-  score: number;
+  strokes: number;
+  time: number;
   player: {
     name: string;
     health: number;
@@ -12,7 +13,8 @@ export interface GameState {
 
 const defaultGameState = {
   location: 'start-menu',
-  score: 0,
+  strokes: 0,
+  time: 0,
   player: {
     name: '',
     health: 100,
@@ -30,6 +32,8 @@ export const changePlayerName = (name: string) => setGameState('player', 'name',
 
 export const changePlayerHealth = (health: number) => setGameState('player', 'health', health);
 
-export const setScore = (score: number) => setGameState('score', score);
+export const addStroke = () => setGameState('strokes', gameState.strokes + 1);
+
+export const addTime = () => setGameState('time', gameState.time + 1);
 
 export default gameState;

@@ -7,7 +7,10 @@ function App() {
     <div class="app">
       <div class="header">
         <h1>2d__golf</h1>
-        {gameState.score}
+        <div class="score">
+          <span>Time: {gameState.time.toString().padStart(14, '0')}</span>
+          <span>Strokes: {gameState.strokes.toString().padStart(8, '0')}</span>
+        </div>
       </div>
 
       <div class="game-container">
@@ -28,7 +31,7 @@ function App() {
       </div>
 
       <span class="footer">
-        Made with <a href="https://solidjs.com/">SolidJS</a>
+        Made with <a href="https://solidjs.com/">SolidJS</a> & <a href="https://p5js.org/">p5</a>
       </span>
     </div>
   )
