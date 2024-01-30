@@ -1,0 +1,33 @@
+.game {
+  width: 500px;
+  height: 500px;
+}
+
+.level-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.edit-controls {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  background-color: white;
+}
+
+.edit-controls button {
+  border-radius: 0;
+  border: 1px solid #fff;
+  background-color: lightslategray;
+  color: #fff;
+  min-width: unset;
+  cursor: pointer;
+  padding: 0;
+}
+
+.edit-controls span {
+  background-color: orange;
+  color: #fff;
+  padding: 0 10px;
+}
