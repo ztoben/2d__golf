@@ -9,7 +9,7 @@ import levelState, {
   TILE_COLORS,
   TILE_SIZE,
   TILE_TYPES,
-  updateMap,
+  updateMap, resetLevel,
 } from '../level-state.ts';
 import p5 from 'p5';
 import { createSignal } from 'solid-js';
@@ -63,8 +63,7 @@ const Level = ({ editing }: LevelProps) => {
       canvas.style('visibility', 'visible');
 
       if (editing) {
-        // canvas.mouseClicked(() => editMouseClick(p, resource));
-        canvas.mousePressed(() => editMouseClick(p, resource, brushSize));
+        canvas.mouseClicked(() => editMouseClick(p, resource, brushSize));
         canvas.mouseMoved(() => {
           if (p.mouseIsPressed) {
             editMouseClick(p, resource, brushSize);
@@ -74,6 +73,8 @@ const Level = ({ editing }: LevelProps) => {
     };
 
     p.draw = () => {
+      // set render speed based on what tile the ball is on
+      determineBallSpeed(p);
       drawBoard(p);
 
       if (editing) {
@@ -99,7 +100,7 @@ const Level = ({ editing }: LevelProps) => {
                 padding: '2px',
               }}
             >
-              Resource: {resourceName(resource)}
+              Tile: {resourceName(resource)}
             </span>
             <span>Brush Size: </span>
             <input
@@ -138,6 +139,7 @@ const Level = ({ editing }: LevelProps) => {
             </div>
             <div class="edit-actions">
               <button onClick={saveLevel}>Save Level</button>
+              <button onClick={resetLevel}>Reset</button>
               <button onClick={() => changeLocation('start-menu')}>Exit</button>
             </div>
           </div>
@@ -277,6 +279,27 @@ function playing(p: p5) {
       addStroke();
     }
   };
+}
+
+function determineBallSpeed(p: p5) {
+  const ballIndex =
+    Math.floor(levelState.ballPosition.y / TILE_SIZE) * levelState.width +
+    Math.floor(levelState.ballPosition.x / TILE_SIZE);
+  const tile = levelState.map[ballIndex];
+
+  switch (tile) {
+    case TILE_TYPES.green:
+      p.frameRate(60);
+      break;
+    case TILE_TYPES.rough:
+      p.frameRate(30);
+      break;
+    case TILE_TYPES.sand:
+      p.frameRate(5);
+      break;
+  }
+
+  return 60;
 }
 
 function drawBoard(p: p5) {

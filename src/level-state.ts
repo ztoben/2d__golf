@@ -75,6 +75,14 @@ const [levelState, setLevelState] = createStore<LevelState>({
 
 export const updateMap = (map: string) => setLevelState('map', map);
 
+export const resetLevel = () => {
+  setLevelState('map', buildEmptyMap());
+  setLevelState('ballPosition', { x: 0, y: 0 });
+  setLevelState('flagPosition', { x: 250, y: 250 });
+  setLevelState('width', MAP_SIZE);
+  setLevelState('height', MAP_SIZE);
+}
+
 export const moveLeft = () => {
   const { x, y } = levelState.ballPosition;
   const newX = x - TILE_SIZE;
