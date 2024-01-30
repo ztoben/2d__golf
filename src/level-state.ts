@@ -1,4 +1,5 @@
 import { createStore } from 'solid-js/store';
+import gameState from "./game-state.ts";
 const levels = import.meta.glob('./levels/*.json');
 
 export const MAP_SIZE = 500;
@@ -89,6 +90,7 @@ export const moveLeft = () => {
 
   if (isValidMove(newX, y)) {
     setLevelState('ballPosition', 'x', newX);
+    resetBallIfOutOfBounds(newX, y);
   }
 };
 
@@ -98,6 +100,7 @@ export const moveRight = () => {
 
   if (isValidMove(newX, y)) {
     setLevelState('ballPosition', 'x', newX);
+    resetBallIfOutOfBounds(newX, y);
   }
 };
 
@@ -107,6 +110,7 @@ export const moveUp = () => {
 
   if (isValidMove(x, newY)) {
     setLevelState('ballPosition', 'y', newY);
+    resetBallIfOutOfBounds(x, newY);
   }
 };
 
@@ -116,14 +120,15 @@ export const moveDown = () => {
 
   if (isValidMove(x, newY)) {
     setLevelState('ballPosition', 'y', newY);
+    resetBallIfOutOfBounds(x, newY);
   }
 };
 
 function isValidMove(x: number, y: number) {
-  if (x < 0 || y < 0 || x >= MAP_SIZE || y >= MAP_SIZE) {
-    return false;
-  }
+  return !(x < 0 || y < 0 || x >= MAP_SIZE || y >= MAP_SIZE);
+}
 
+async function resetBallIfOutOfBounds(x: number, y: number) {
   const tile = levelState.map[x / TILE_SIZE + (y / TILE_SIZE) * MAP_SIZE];
 
   switch (tile) {
@@ -131,9 +136,21 @@ function isValidMove(x: number, y: number) {
     case TILE_TYPES.green:
     case TILE_TYPES.rough:
     case TILE_TYPES.sand:
-      return true;
+      return;
     default:
-      return false;
+      let level = gameState.level;
+
+      if (level > Object.keys(levels).length) {
+        level = 1;
+      }
+
+      const levelJson: LevelState = (await levels[
+        `./levels/${level}.json`
+        ]()) as LevelState;
+
+      if (levelJson) {
+        setLevelState('ballPosition', levelJson.ballPosition);
+      }
   }
 }
 

@@ -299,7 +299,7 @@ function determineBallSpeed(p: p5) {
       break;
   }
 
-  return 60;
+  return 45;
 }
 
 function drawBoard(p: p5) {
