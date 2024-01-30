@@ -1,11 +1,11 @@
-import { createStore } from 'solid-js/store'
-const levels = import.meta.glob('./levels/*.json')
+import { createStore } from 'solid-js/store';
+const levels = import.meta.glob('./levels/*.json');
 
-export const MAP_SIZE = 500
-export const TILE_SIZE = 10
+export const MAP_SIZE = 500;
+export const TILE_SIZE = 10;
 
 interface Color {
-  [key: string]: string
+  [key: string]: string;
 }
 
 export const TILE_TYPES = {
@@ -15,39 +15,39 @@ export const TILE_TYPES = {
   sand: 's',
   water: 'w',
   empty: 'e',
-}
+};
 
 export const TILE_COLORS: Color = {
-  f: '#00ff00',
-  r: '#00aa00',
+  f: '#00b700',
+  r: '#005900',
   g: '#00ff00',
   s: '#ffcc00',
   w: '#0000ff',
   e: '#000000',
-}
+};
 
 export interface LevelState {
-  map: string
-  width: number
-  height: number
+  map: string;
+  width: number;
+  height: number;
   ballPosition: {
-    x: number
-    y: number
-  }
+    x: number;
+    y: number;
+  };
   flagPosition: {
-    x: number
-    y: number
-  }
-  levelStatus: 'playing' | 'won'
+    x: number;
+    y: number;
+  };
+  levelStatus: 'playing' | 'won';
 }
 
 const buildEmptyMap = () => {
-  const tiles = []
+  const tiles = [];
   for (let i = 0; i < (MAP_SIZE * MAP_SIZE) / TILE_SIZE; i += 1) {
-    tiles.push(TILE_TYPES.fairway)
+    tiles.push(TILE_TYPES.fairway);
   }
-  return tiles.join('')
-}
+  return tiles.join('');
+};
 
 const [levelState, setLevelState] = createStore<LevelState>({
   map: buildEmptyMap(),
@@ -66,67 +66,93 @@ const [levelState, setLevelState] = createStore<LevelState>({
       this.ballPosition.x === this.flagPosition.x &&
       this.ballPosition.y === this.flagPosition.y
     ) {
-      return 'won'
+      return 'won';
     }
 
-    return 'playing'
+    return 'playing';
   },
-})
+});
 
-export const updateMap = (map: string) => setLevelState('map', map)
+export const updateMap = (map: string) => setLevelState('map', map);
 
 export const moveLeft = () => {
-  const x = levelState.ballPosition.x
-  if (x > 0) {
-    setLevelState('ballPosition', 'x', x - TILE_SIZE)
+  const { x, y } = levelState.ballPosition;
+  const newX = x - TILE_SIZE;
+
+  if (isValidMove(newX, y)) {
+    setLevelState('ballPosition', 'x', newX);
   }
-}
+};
 
 export const moveRight = () => {
-  const x = levelState.ballPosition.x
-  if (x < MAP_SIZE - TILE_SIZE) {
-    setLevelState('ballPosition', 'x', x + TILE_SIZE)
+  const { x, y } = levelState.ballPosition;
+  const newX = x + TILE_SIZE;
+
+  if (isValidMove(newX, y)) {
+    setLevelState('ballPosition', 'x', newX);
   }
-}
+};
 
 export const moveUp = () => {
-  const y = levelState.ballPosition.y
-  if (y > 0) {
-    setLevelState('ballPosition', 'y', y - TILE_SIZE)
+  const { x, y } = levelState.ballPosition;
+  const newY = y - TILE_SIZE;
+
+  if (isValidMove(x, newY)) {
+    setLevelState('ballPosition', 'y', newY);
   }
-}
+};
 
 export const moveDown = () => {
-  const y = levelState.ballPosition.y
-  if (y < MAP_SIZE - TILE_SIZE) {
-    setLevelState('ballPosition', 'y', y + TILE_SIZE)
+  const { x, y } = levelState.ballPosition;
+  const newY = y + TILE_SIZE;
+
+  if (isValidMove(x, newY)) {
+    setLevelState('ballPosition', 'y', newY);
+  }
+};
+
+function isValidMove(x: number, y: number) {
+  if (x < 0 || y < 0 || x >= MAP_SIZE || y >= MAP_SIZE) {
+    return false;
+  }
+
+  const tile = levelState.map[x / TILE_SIZE + (y / TILE_SIZE) * MAP_SIZE];
+
+  switch (tile) {
+    case TILE_TYPES.fairway:
+    case TILE_TYPES.green:
+    case TILE_TYPES.rough:
+    case TILE_TYPES.sand:
+      return true;
+    default:
+      return false;
   }
 }
 
 export const setFlagPosition = (x: number, y: number) =>
-  setLevelState('flagPosition', { x, y })
+  setLevelState('flagPosition', { x, y });
 
-export const setPlayerPosition = (x: number, y: number) =>
-  setLevelState('ballPosition', { x, y })
+export const setBallPosition = (x: number, y: number) =>
+  setLevelState('ballPosition', { x, y });
 
 export const loadLevelState = async (level: number) => {
-  console.log('loading level', level)
+  console.log('loading level', level);
 
   if (level > Object.keys(levels).length) {
-    level = 1
+    level = 1;
   }
 
   const levelJson: LevelState = (await levels[
     `./levels/${level}.json`
-  ]()) as LevelState
+  ]()) as LevelState;
 
   if (levelJson) {
-    setLevelState('map', levelJson.map)
-    setLevelState('width', levelJson.width)
-    setLevelState('height', levelJson.height)
-    setLevelState('ballPosition', levelJson.ballPosition)
-    setLevelState('flagPosition', levelJson.flagPosition)
+    setLevelState('map', levelJson.map);
+    setLevelState('width', levelJson.width);
+    setLevelState('height', levelJson.height);
+    setLevelState('ballPosition', levelJson.ballPosition);
+    setLevelState('flagPosition', levelJson.flagPosition);
   }
-}
+};
 
-export default levelState
+export default levelState;

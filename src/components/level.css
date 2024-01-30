@@ -13,7 +13,8 @@
   display: flex;
   justify-content: space-between;
   width: 100%;
-  background-color: white;
+  background-color: black;
+  padding: 2px;
 }
 
 .edit-controls button {
@@ -23,11 +24,23 @@
   color: #fff;
   min-width: unset;
   cursor: pointer;
-  padding: 0;
+  padding: 2px;
+  margin: 2px;
 }
 
-.edit-controls span {
-  background-color: orange;
-  color: #fff;
-  padding: 0 10px;
+.edit-controls .active {
+  background-color: #fff;
+  color: blue;
+}
+
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  background-color: black;
+}
+
+.edit-actions button {
+  background-color: green;
+  margin: 2px;
 }

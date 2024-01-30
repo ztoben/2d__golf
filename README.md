@@ -1,4 +1,5 @@
-# 2d__golf
+# 2d\_\_golf
+
 A small golf game made with SolidJS and p5.js.
 
 ### Usage

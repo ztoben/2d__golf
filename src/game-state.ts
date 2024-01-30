@@ -1,14 +1,14 @@
-import { createStore } from 'solid-js/store'
+import { createStore } from 'solid-js/store';
 
 export interface GameState {
-  location: string
-  strokes: number
-  level: number
+  location: string;
+  strokes: number;
+  level: number;
   player: {
-    name: string
-    health: number
-    inventory: string[]
-  }
+    name: string;
+    health: number;
+    inventory: string[];
+  };
 }
 
 const defaultGameState = {
@@ -20,23 +20,23 @@ const defaultGameState = {
     health: 100,
     inventory: [],
   },
-}
+};
 
-const [gameState, setGameState] = createStore<GameState>(defaultGameState)
+const [gameState, setGameState] = createStore<GameState>(defaultGameState);
 
-export const resetGameState = () => setGameState(defaultGameState)
+export const resetGameState = () => setGameState(defaultGameState);
 
 export const changeLocation = (location: string) =>
-  setGameState('location', location)
+  setGameState('location', location);
 
 export const changePlayerName = (name: string) =>
-  setGameState('player', 'name', name)
+  setGameState('player', 'name', name);
 
 export const changePlayerHealth = (health: number) =>
-  setGameState('player', 'health', health)
+  setGameState('player', 'health', health);
 
-export const addStroke = () => setGameState('strokes', gameState.strokes + 1)
+export const addStroke = () => setGameState('strokes', gameState.strokes + 1);
 
-export const changeLevel = (level: number) => setGameState('level', level)
+export const changeLevel = (level: number) => setGameState('level', level);
 
-export default gameState
+export default gameState;

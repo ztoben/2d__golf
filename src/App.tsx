@@ -1,6 +1,6 @@
-import gameState, { changeLocation } from './game-state.ts'
-import './App.css'
-import Level from './components/level.tsx'
+import gameState, { changeLocation } from './game-state.ts';
+import './App.css';
+import Level from './components/level.tsx';
 
 function App() {
   return (
@@ -43,7 +43,7 @@ function App() {
         <a href="https://p5js.org/">p5</a>
       </span>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
