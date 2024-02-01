@@ -58,3 +58,9 @@
   align-items: flex-start;
   justify-content: center;
 }
+
+.back-button {
+  min-width: unset;
+  margin: 5px 0 5px 5px;
+  align-self: flex-end;
+}

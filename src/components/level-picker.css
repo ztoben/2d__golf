@@ -1,0 +1,10 @@
+.level-picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+}
+
+.level-picker button {
+  min-width: unset;
+  margin: 5px;
+}

@@ -9,7 +9,11 @@ import levelState, {
   TILE_COLORS,
   TILE_SIZE,
   TILE_TYPES,
-  updateMap, resetLevel,
+  updateMap,
+  resetLevel,
+  setBallVelocity,
+  isValidMove,
+  setLevelStatus,
 } from '../level-state.ts';
 import p5 from 'p5';
 import { createSignal } from 'solid-js';
@@ -74,7 +78,6 @@ const Level = ({ editing }: LevelProps) => {
 
     p.draw = () => {
       // set render speed based on what tile the ball is on
-      determineBallSpeed(p);
       drawBoard(p);
 
       if (editing) {
@@ -83,7 +86,10 @@ const Level = ({ editing }: LevelProps) => {
         endGame(p);
       } else if (levelState.levelStatus === 'playing') {
         playing(p);
+        checkWinState(p);
       }
+
+      moveBall(p);
     };
   };
 
@@ -263,43 +269,157 @@ function endGame(p: p5) {
   };
 }
 
-function playing(p: p5) {
-  p.keyIsDown(p.LEFT_ARROW) && moveLeft();
-  p.keyIsDown(p.RIGHT_ARROW) && moveRight();
-  p.keyIsDown(p.UP_ARROW) && moveUp();
-  p.keyIsDown(p.DOWN_ARROW) && moveDown();
+function checkWinState(p: p5) {
+  const flagCenter = {
+    x: levelState.flagPosition.x + TILE_SIZE / 2,
+    y: levelState.flagPosition.y + TILE_SIZE / 2,
+  };
+  const ballCenter = {
+    x: levelState.ballPosition.x + TILE_SIZE / 2,
+    y: levelState.ballPosition.y + TILE_SIZE / 2,
+  };
 
-  p.keyPressed = () => {
-    if (
-      p.keyCode === p.LEFT_ARROW ||
-      p.keyCode === p.RIGHT_ARROW ||
-      p.keyCode === p.UP_ARROW ||
-      p.keyCode === p.DOWN_ARROW
-    ) {
+  const distance = p.dist(
+    ballCenter.x,
+    ballCenter.y,
+    flagCenter.x,
+    flagCenter.y
+  );
+  const maxMagnitude = TILE_SIZE / 2;
+
+  if (
+    distance < TILE_SIZE / 2 &&
+    levelState.ballVelocity.mag() < maxMagnitude
+  ) {
+    setLevelStatus('won');
+    setBallVelocity(p.createVector(0, 0));
+    setBallPosition(levelState.flagPosition.x, levelState.flagPosition.y);
+    return;
+  }
+}
+
+function playing(p: p5) {
+  p.stroke('white');
+
+  const ballX = levelState.ballPosition.x + TILE_SIZE / 2;
+  const ballY = levelState.ballPosition.y + TILE_SIZE / 2;
+  const cursorX = p.mouseX;
+  const cursorY = p.mouseY;
+
+  const distance = p.dist(ballX, ballY, cursorX, cursorY);
+  const maxHelperDistance = 50;
+  const directionX = cursorX - ballX;
+  const directionY = cursorY - ballY;
+  const length = Math.min(maxHelperDistance, distance);
+
+  const lineEndX = ballX + (directionX / distance) * length;
+  const lineEndY = ballY + (directionY / distance) * length;
+
+  p.line(ballX, ballY, lineEndX, lineEndY);
+
+  //draw a white triangle to indicate the direction of the ball
+  const arrowSize = 3;
+  p.push();
+  p.translate(ballX, ballY);
+  p.rotate(p.atan2(directionY, directionX));
+  p.triangle(
+    length - arrowSize,
+    arrowSize,
+    length,
+    0,
+    length - arrowSize,
+    -arrowSize
+  );
+  p.pop();
+
+  // on click, move the ball
+  p.mouseClicked = () => {
+    // if mouse is inside the canvas
+    const clickIsInsideCanvas =
+      p.mouseX > 0 &&
+      p.mouseX < levelState.width &&
+      p.mouseY > 0 &&
+      p.mouseY < levelState.height;
+
+    if (!clickIsInsideCanvas) return;
+
+    if (gameState.location === 'game' && levelState.levelStatus === 'playing') {
       addStroke();
     }
+
+    const speed = determineBallSpeed(p);
+    const direction = p.createVector(cursorX - ballX, cursorY - ballY);
+    direction.normalize();
+    direction.mult(speed);
+
+    setBallVelocity(direction);
   };
 }
 
 function determineBallSpeed(p: p5) {
-  const ballIndex =
-    Math.floor(levelState.ballPosition.y / TILE_SIZE) * levelState.width +
-    Math.floor(levelState.ballPosition.x / TILE_SIZE);
-  const tile = levelState.map[ballIndex];
+  const ballX = levelState.ballPosition.x + TILE_SIZE / 2;
+  const ballY = levelState.ballPosition.y + TILE_SIZE / 2;
+  const cursorX = p.mouseX;
+  const cursorY = p.mouseY;
 
-  switch (tile) {
-    case TILE_TYPES.green:
-      p.frameRate(60);
-      break;
-    case TILE_TYPES.rough:
-      p.frameRate(30);
-      break;
-    case TILE_TYPES.sand:
-      p.frameRate(5);
-      break;
+  const distance = p.dist(ballX, ballY, cursorX, cursorY);
+  const maxDistance = 100;
+  const maxSpeed = 25;
+
+  const speed = p.map(distance, 0, maxDistance, 0, 10);
+
+  return Math.min(speed, maxSpeed);
+}
+
+function determineFriction() {
+  const friction = 0.9;
+  const ballX = levelState.ballPosition.x + TILE_SIZE / 2;
+  const ballY = levelState.ballPosition.y + TILE_SIZE / 2;
+  const tileX = Math.floor(ballX / TILE_SIZE);
+  const tileY = Math.floor(ballY / TILE_SIZE);
+
+  const tile = levelState.map[tileY * levelState.width + tileX];
+
+  if (tile === TILE_TYPES.rough) {
+    return friction - 0.1;
+  } else if (tile === TILE_TYPES.sand) {
+    return friction - 0.2;
+  } else if (tile === TILE_TYPES.green) {
+    return friction + 0.05;
+  } else {
+    return friction;
   }
+}
 
-  return 45;
+function moveBall(p: p5) {
+  if (
+    levelState.ballVelocity &&
+    levelState.ballVelocity.mag() > 0 &&
+    levelState.levelStatus === 'playing'
+  ) {
+    const friction = determineFriction();
+    const newVelocity = levelState.ballVelocity.mult(friction);
+    const minVelocity = 0.1;
+
+    setBallVelocity(
+      Math.abs(newVelocity.x) < minVelocity
+        ? p.createVector(0, newVelocity.y)
+        : newVelocity
+    );
+
+    const newPosition = p.createVector(
+      levelState.ballPosition.x,
+      levelState.ballPosition.y
+    );
+
+    // set new position
+    // TODO: consider collisions
+    newPosition.add(levelState.ballVelocity);
+
+    if (isValidMove(newPosition.x, newPosition.y)) {
+      setBallPosition(newPosition.x, newPosition.y);
+    }
+  }
 }
 
 function drawBoard(p: p5) {

@@ -39,4 +39,6 @@ export const addStroke = () => setGameState('strokes', gameState.strokes + 1);
 
 export const changeLevel = (level: number) => setGameState('level', level);
 
+export const resetStrokes = () => setGameState('strokes', 0);
+
 export default gameState;

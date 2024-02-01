@@ -1,8 +1,32 @@
-import gameState, { changeLocation } from './game-state.ts';
+import gameState, {
+  changeLevel,
+  changeLocation,
+  resetStrokes,
+} from './game-state.ts';
 import './App.css';
 import Level from './components/level.tsx';
+import { LevelPicker } from './components/level-picker.tsx';
+import { loadLevelState } from './level-state.ts';
 
 function App() {
+  const editMode = async () => {
+    changeLevel(1);
+    resetStrokes();
+    await loadLevelState(1);
+    changeLocation('editing');
+  };
+
+  const startNewGame = async () => {
+    changeLevel(1);
+    resetStrokes();
+    await loadLevelState(1);
+    changeLocation('game');
+  };
+
+  const pickLevel = () => {
+    changeLocation('pick-level');
+  };
+
   return (
     <div class="app">
       <div class="header">
@@ -13,29 +37,35 @@ function App() {
         </div>
       </div>
 
+      {gameState.location !== 'start-menu' && (
+        <button
+          class="back-button"
+          onClick={() => changeLocation('start-menu')}
+        >
+          Home
+        </button>
+      )}
+
       <div class="game-container">
         {gameState.location === 'start-menu' && (
           <ul class="menu">
             <li>
-              <button onClick={() => changeLocation('game')}>Start Game</button>
+              <button onClick={startNewGame}>Start Game</button>
             </li>
             <li>
-              <button onClick={() => changeLocation('editing')}>
-                Level Editor
-              </button>
+              <button onClick={pickLevel}>Pick Level</button>
+            </li>
+            <li>
+              <button onClick={editMode}>Level Editor</button>
             </li>
           </ul>
         )}
 
+        {gameState.location === 'pick-level' && <LevelPicker />}
+
         {gameState.location === 'game' && <Level />}
 
         {gameState.location === 'editing' && <Level editing={true} />}
-
-        {gameState.location === 'game-over' && (
-          <button onClick={() => changeLocation('start-menu')}>
-            Start Over
-          </button>
-        )}
       </div>
 
       <span class="footer">
